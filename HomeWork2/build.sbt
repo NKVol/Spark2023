@@ -9,6 +9,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "SparkHW2",
     libraryDependencies ++= Seq(
+      library.postgresSql,
       library.sparkSql
     ),
     idePackagePrefix := Some("ru.otus.spark"),
