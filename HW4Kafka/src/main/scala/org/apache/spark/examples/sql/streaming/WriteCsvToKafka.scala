@@ -16,7 +16,7 @@ object WriteCsvToKafka extends SparkSessionWrapper {
     val js = df.toJSON
     js.write
       .format("kafka")
-      .option("kafka.bootstrap.servers", "0.0.0.0:9092")
+      .option("kafka.bootstrap.servers", "localhost:9092")
       .option("topic", "books")
       .save()
   }
