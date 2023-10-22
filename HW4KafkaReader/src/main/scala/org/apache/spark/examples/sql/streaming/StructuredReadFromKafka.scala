@@ -14,7 +14,9 @@ object StructuredReadFromKafka extends SparkSessionWrapper {
   }
 
   def readFromKafka(): Unit = {
-    val checkpointLocation =  "/tmp/temporary-" + UUID.randomUUID.toString
+    /*
+    * Написать приложение, которое будет читать из темы books данные, сериализованные в JSON
+     */
 
     val spark = SparkSession
       .builder
@@ -27,22 +29,17 @@ object StructuredReadFromKafka extends SparkSessionWrapper {
     val lines = spark
       .readStream
       .format("kafka")
-      .option("kafka.bootstrap.server", "localhost:9092")
+      .option("kafka.bootstrap.servers", "localhost:9092")
       .option("topic", "books")
       .load()
       .selectExpr("CAST(value AS STRING)")
       .as[String]
 
-    // Generate running word count
-    val wordCounts = lines.flatMap(_.split(" ")).groupBy("value").count()
+    /*
+    * отфильтровывать записи с рейтингом меньше 4 и сохранять результат на диск в формате Parquet.
+     */
+    val lowRating = lines.map(_(3).toFloat).filter(_ < 4).toDF
+    toFileParquet(lowRating)
 
-    // Start running the query that prints the running counts to the console
-    val query = wordCounts.writeStream
-      .outputMode("complete")
-      .format("console")
-      .option("checkpointLocation", checkpointLocation)
-      .start()
-
-    query.awaitTermination()
   }
 }
